@@ -2,55 +2,65 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mumma's Candy World 🍭</title>
+    <title>Mumma's Tech Candy 🍬</title>
     <style>
-        body { background: #ffdef2; font-family: 'Comic Sans MS', cursive; text-align: center; margin: 0; overflow: hidden; touch-action: none; }
-        h2 { color: #ff1493; margin: 10px; text-shadow: 2px 2px #fff; }
-        #grid { display: grid; grid-template-columns: repeat(6, 1fr); grid-gap: 5px; max-width: 350px; margin: 20px auto; background: #fff; padding: 10px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-        .candy { width: 50px; height: 50px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 25px; transition: transform 0.2s; }
-        .candy:active { transform: scale(0.9); }
-        #score-box { font-size: 24px; color: #ff1493; font-weight: bold; }
-        #footer { position: absolute; bottom: 10px; width: 100%; color: #db7093; font-weight: bold; }
+        body { background: #1a1a2e; font-family: sans-serif; text-align: center; margin: 0; overflow: hidden; color: white; touch-action: none; position: fixed; width: 100%; height: 100%; }
+        .header { background: linear-gradient(45deg, #ff007f, #7a0bc0); padding: 15px; border-bottom: 3px solid gold; }
+        #score-box { font-size: 32px; margin: 15px 0; color: #00ffcc; font-weight: bold; text-shadow: 0 0 10px #00ffcc; }
+        #grid { display: grid; grid-template-columns: repeat(6, 1fr); grid-gap: 8px; max-width: 360px; margin: 0 auto; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 15px; border: 2px solid #ff007f; }
+        .candy { width: 50px; height: 50px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #16213e; border: 1px solid #444; transition: transform 0.1s; }
+        .candy span { font-size: 8px; margin-top: 2px; color: #00ffcc; font-weight: bold; }
+        .candy:active { transform: scale(0.85); background: #ff007f; }
+        #footer { position: absolute; bottom: 15px; width: 100%; color: gold; font-size: 14px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <h2>🍬 Mumma's Candy Match 🍭</h2>
-    <div id="score-box">Score: <span id="score">0</span></div>
+    <div class="header"><h2>AQDAS TECH-CANDY 🍭</h2></div>
+    <div id="score-box"><span id="score">0</span> XP</div>
     <div id="grid"></div>
-    <div id="footer">Made with ❤️ for the Best Mumma</div>
+    <div id="footer">Made for the Smartest Mumma ❤️</div>
 
     <script>
         const grid = document.getElementById('grid');
         const scoreDisplay = document.getElementById('score');
-        const candies = ['🍎', '🍬', '🍭', '🍩', '🍦', '🍫'];
+        const flavors = [
+            { icon: '🐍', name: 'PYTHON' },
+            { icon: '💎', name: 'C++' },
+            { icon: '🌐', name: 'HTML' },
+            { icon: '📜', name: 'JS' },
+            { icon: '🎨', name: 'CSS' }
+        ];
+
         let score = 0;
         let board = [];
 
         function createBoard() {
+            grid.innerHTML = '';
+            board = [];
             for (let i = 0; i < 36; i++) {
+                const flavor = flavors[Math.floor(Math.random() * flavors.length)];
                 const candy = document.createElement('div');
-                candy.classList.add('candy');
-                candy.innerHTML = candies[Math.floor(Math.random() * candies.length)];
-                candy.setAttribute('id', i);
-                candy.onclick = () => selectCandy(i);
+                candy.className = 'candy';
+                candy.innerHTML = `${flavor.icon}<span>${flavor.name}</span>`;
+                candy.onclick = (e) => { e.preventDefault(); selectCandy(i, flavor.name); };
+                candy.ontouchstart = (e) => { e.preventDefault(); selectCandy(i, flavor.name); };
                 grid.appendChild(candy);
-                board.push(candy);
+                board.push({ el: candy, name: flavor.name });
             }
         }
 
-        function selectCandy(id) {
-            // Simple logic: Click to match same type
-            let current = board[id].innerHTML;
-            let matches = board.filter(c => c.innerHTML === current);
-            
+        function selectCandy(id, name) {
+            let matches = board.filter(c => c.name === name);
             if(matches.length > 1) {
                 score += matches.length * 10;
                 scoreDisplay.innerText = score;
                 matches.forEach(c => {
-                    c.style.transform = 'scale(1.2)';
+                    c.el.style.transform = 'scale(0.5)';
                     setTimeout(() => {
-                        c.innerHTML = candies[Math.floor(Math.random() * candies.length)];
-                        c.style.transform = 'scale(1)';
+                        const newF = flavors[Math.floor(Math.random() * flavors.length)];
+                        c.name = newF.name;
+                        c.el.innerHTML = `${newF.icon}<span>${newF.name}</span>`;
+                        c.el.style.transform = 'scale(1)';
                     }, 200);
                 });
             }
