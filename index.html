@@ -2,14 +2,14 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mumma's Pro Candy Match 🍬</title>
+    <title>Mumma's Candy Crush Pro 🍬</title>
     <style>
         body { background: #ffdef2; font-family: sans-serif; text-align: center; margin: 0; overflow: hidden; touch-action: none; position: fixed; width: 100%; height: 100%; }
         .header { background: #ff1493; padding: 15px; color: white; border-bottom: 4px solid #c71585; }
-        #score-box { font-size: 28px; color: #ff1493; margin: 10px; font-weight: bold; text-shadow: 1px 1px #fff; }
+        #score-box { font-size: 28px; color: #ff1493; margin: 10px; font-weight: bold; }
         #grid { display: grid; grid-template-columns: repeat(6, 1fr); grid-gap: 5px; max-width: 350px; margin: 0 auto; background: #fff; padding: 10px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
         .candy { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .crush { transform: scale(0); opacity: 0; } /* Animation for crushing */
+        .crush { transform: scale(0); opacity: 0; }
         #footer { position: absolute; bottom: 15px; width: 100%; color: #db7093; font-weight: bold; }
     </style>
 </head>
@@ -37,19 +37,24 @@
                 grid.appendChild(square);
                 squares.push(square);
             }
-            setInterval(checkMatches, 100);
+            // Lagatar check karne ke liye loop
+            window.setInterval(function(){
+                checkRowForThree();
+                checkColumnForThree();
+                moveDown();
+            }, 100);
         }
 
-        let firstSelection = null;
-
+        let firstId, secondId;
         function handleSelect(id) {
-            if (firstSelection === null) {
-                firstSelection = id;
-                squares[id].style.background = "rgba(255, 20, 147, 0.2)";
+            if (!firstId) {
+                firstId = id;
+                squares[firstId].style.border = "2px solid #ff1493";
             } else {
-                swap(firstSelection, id);
-                firstSelection = null;
-                squares.forEach(s => s.style.background = "none");
+                secondId = id;
+                swap(firstId, secondId);
+                firstId = null;
+                squares.forEach(s => s.style.border = "none");
             }
         }
 
@@ -59,27 +64,53 @@
             squares[id2].innerHTML = temp;
         }
 
-        function checkMatches() {
-            // Check rows
-            for (let i = 0; i < 35; i++) {
+        function checkRowForThree() {
+            for (let i = 0; i < 34; i++) {
                 let rowOfThree = [i, i+1, i+2];
                 let decidedColor = squares[i].innerHTML;
+                const isBlank = squares[i].innerHTML === '';
                 if (i % 6 > 3) continue;
-                if (rowOfThree.every(index => squares[index].innerHTML === decidedColor && decidedColor !== '')) {
+
+                if (rowOfThree.every(index => squares[index].innerHTML === decidedColor && !isBlank)) {
                     score += 10;
                     scoreDisplay.innerText = score;
                     rowOfThree.forEach(index => {
-                        squares[index].classList.add('crush');
-                        setTimeout(() => {
-                            squares[index].innerHTML = candies[Math.floor(Math.random() * candies.length)];
-                            squares[index].classList.remove('crush');
-                        }, 300);
+                        squares[index].innerHTML = '';
                     });
                 }
             }
         }
+
+        function checkColumnForThree() {
+            for (let i = 0; i < 24; i++) {
+                let columnOfThree = [i, i+width, i+width*2];
+                let decidedColor = squares[i].innerHTML;
+                const isBlank = squares[i].innerHTML === '';
+
+                if (columnOfThree.every(index => squares[index].innerHTML === decidedColor && !isBlank)) {
+                    score += 10;
+                    scoreDisplay.innerText = score;
+                    columnOfThree.forEach(index => {
+                        squares[index].innerHTML = '';
+                    });
+                }
+            }
+        }
+
+        function moveDown() {
+            for (let i = 0; i < 30; i++) {
+                if (squares[i + width].innerHTML === '') {
+                    squares[i + width].innerHTML = squares[i].innerHTML;
+                    squares[i].innerHTML = '';
+                }
+                const firstRow = [0, 1, 2, 3, 4, 5];
+                if (firstRow.includes(i) && squares[i].innerHTML === '') {
+                    squares[i].innerHTML = candies[Math.floor(Math.random() * candies.length)];
+                }
+            }
+        }
+
         createBoard();
     </script>
 </body>
-    </html>
-
+</html>
