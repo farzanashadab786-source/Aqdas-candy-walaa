@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Mumma's Candy World 🍭</title>
+    <style>
+        body { background: #ffdef2; font-family: 'Comic Sans MS', cursive; text-align: center; margin: 0; overflow: hidden; touch-action: none; }
+        h2 { color: #ff1493; margin: 10px; text-shadow: 2px 2px #fff; }
+        #grid { display: grid; grid-template-columns: repeat(6, 1fr); grid-gap: 5px; max-width: 350px; margin: 20px auto; background: #fff; padding: 10px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .candy { width: 50px; height: 50px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 25px; transition: transform 0.2s; }
+        .candy:active { transform: scale(0.9); }
+        #score-box { font-size: 24px; color: #ff1493; font-weight: bold; }
+        #footer { position: absolute; bottom: 10px; width: 100%; color: #db7093; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h2>🍬 Mumma's Candy Match 🍭</h2>
+    <div id="score-box">Score: <span id="score">0</span></div>
+    <div id="grid"></div>
+    <div id="footer">Made with ❤️ for the Best Mumma</div>
+
+    <script>
+        const grid = document.getElementById('grid');
+        const scoreDisplay = document.getElementById('score');
+        const candies = ['🍎', '🍬', '🍭', '🍩', '🍦', '🍫'];
+        let score = 0;
+        let board = [];
+
+        function createBoard() {
+            for (let i = 0; i < 36; i++) {
+                const candy = document.createElement('div');
+                candy.classList.add('candy');
+                candy.innerHTML = candies[Math.floor(Math.random() * candies.length)];
+                candy.setAttribute('id', i);
+                candy.onclick = () => selectCandy(i);
+                grid.appendChild(candy);
+                board.push(candy);
+            }
+        }
+
+        function selectCandy(id) {
+            // Simple logic: Click to match same type
+            let current = board[id].innerHTML;
+            let matches = board.filter(c => c.innerHTML === current);
+            
+            if(matches.length > 1) {
+                score += matches.length * 10;
+                scoreDisplay.innerText = score;
+                matches.forEach(c => {
+                    c.style.transform = 'scale(1.2)';
+                    setTimeout(() => {
+                        c.innerHTML = candies[Math.floor(Math.random() * candies.length)];
+                        c.style.transform = 'scale(1)';
+                    }, 200);
+                });
+            }
+        }
+        createBoard();
+    </script>
+</body>
+</html>
