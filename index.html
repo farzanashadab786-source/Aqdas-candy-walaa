@@ -2,33 +2,73 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Mumma's Candy Crush Pro 🍬</title>
+    <title>Mumma's Candy Challenge 🍬</title>
     <style>
-        body { background: #ffdef2; font-family: sans-serif; text-align: center; margin: 0; overflow: hidden; touch-action: none; position: fixed; width: 100%; height: 100%; }
-        .header { background: #ff1493; padding: 15px; color: white; border-bottom: 4px solid #c71585; }
-        #score-box { font-size: 28px; color: #ff1493; margin: 10px; font-weight: bold; }
-        #grid { display: grid; grid-template-columns: repeat(6, 1fr); grid-gap: 5px; max-width: 350px; margin: 0 auto; background: #fff; padding: 10px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        .candy { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .crush { transform: scale(0); opacity: 0; }
-        #footer { position: absolute; bottom: 15px; width: 100%; color: #db7093; font-weight: bold; }
+        :root { --pink: #ff1493; --light-pink: #ffdef2; }
+        body { background: var(--light-pink); font-family: 'Segoe UI', sans-serif; margin: 0; overflow: hidden; touch-action: none; }
+        
+        /* Menu Styling */
+        #menu { position: fixed; width: 100%; height: 100%; background: rgba(255, 20, 147, 0.9); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: 0.5s; }
+        .play-btn { width: 100px; height: 100px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; cursor: pointer; box-shadow: 0 0 20px white; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); box-shadow: 0 0 0px white; } 50% { transform: scale(1.1); box-shadow: 0 0 30px white; } 100% { transform: scale(1); box-shadow: 0 0 0px white; } }
+        
+        /* Game UI */
+        .stats { display: flex; justify-content: space-around; background: var(--pink); color: white; padding: 10px; font-weight: bold; border-bottom: 4px solid #c71585; }
+        #grid { display: grid; grid-template-columns: repeat(6, 1fr); grid-gap: 5px; max-width: 350px; margin: 20px auto; background: #fff; padding: 10px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .candy { width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 30px; cursor: pointer; transition: 0.2s; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
-    <div class="header"><h2>MUMMA'S CANDY WORLD 🍭</h2></div>
-    <div id="score-box">Score: <span id="score">0</span></div>
+
+    <div id="menu">
+        <h1>🎧 DJ GEMINI REMIX</h1>
+        <p>Target: 200 Points | Moves: 15</p>
+        <div class="play-btn" onclick="startGame()">▶️</div>
+        <p>Tap to Play Mumma's Fav!</p>
+    </div>
+
+    <div class="stats">
+        <div>Moves: <span id="moves">15</span></div>
+        <div>Score: <span id="score">0</span>/200</div>
+    </div>
+
     <div id="grid"></div>
-    <div id="footer">Match 3 to Crush! ❤️</div>
 
     <script>
         const grid = document.getElementById('grid');
         const scoreDisplay = document.getElementById('score');
-        const width = 6;
+        const movesDisplay = document.getElementById('moves');
         const candies = ['🍎', '🍬', '🍭', '🍩', '🍦', '🍫'];
         let score = 0;
+        let moves = 15;
         let squares = [];
 
+        // DJ Gemini Music Logic (Simple Beep Pattern)
+        function playMusic() {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.type = 'triangle';
+            oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            oscillator.start();
+            // Loop feeling
+            setInterval(() => {
+                oscillator.frequency.exponentialRampToValueAtTime(Math.random() * 200 + 200, audioCtx.currentTime + 0.5);
+            }, 1000);
+        }
+
+        function startGame() {
+            document.getElementById('menu').classList.add('hidden');
+            playMusic();
+            createBoard();
+        }
+
         function createBoard() {
-            for (let i = 0; i < width * width; i++) {
+            for (let i = 0; i < 36; i++) {
                 const square = document.createElement('div');
                 square.classList.add('candy');
                 square.innerHTML = candies[Math.floor(Math.random() * candies.length)];
@@ -37,24 +77,24 @@
                 grid.appendChild(square);
                 squares.push(square);
             }
-            // Lagatar check karne ke liye loop
-            window.setInterval(function(){
-                checkRowForThree();
-                checkColumnForThree();
+            setInterval(() => {
+                checkMatches();
                 moveDown();
             }, 100);
         }
 
-        let firstId, secondId;
+        let firstId = null;
         function handleSelect(id) {
-            if (!firstId) {
+            if (moves <= 0) return alert("Game Over! Score: " + score);
+            if (firstId === null) {
                 firstId = id;
-                squares[firstId].style.border = "2px solid #ff1493";
+                squares[id].style.transform = "scale(1.2)";
             } else {
-                secondId = id;
-                swap(firstId, secondId);
+                swap(firstId, id);
+                moves--;
+                movesDisplay.innerText = moves;
+                squares[firstId].style.transform = "scale(1)";
                 firstId = null;
-                squares.forEach(s => s.style.border = "none");
             }
         }
 
@@ -64,53 +104,41 @@
             squares[id2].innerHTML = temp;
         }
 
-        function checkRowForThree() {
+        function checkMatches() {
+            // Rows
             for (let i = 0; i < 34; i++) {
-                let rowOfThree = [i, i+1, i+2];
-                let decidedColor = squares[i].innerHTML;
-                const isBlank = squares[i].innerHTML === '';
                 if (i % 6 > 3) continue;
-
-                if (rowOfThree.every(index => squares[index].innerHTML === decidedColor && !isBlank)) {
+                let row = [i, i+1, i+2];
+                let color = squares[i].innerHTML;
+                if (color !== '' && row.every(idx => squares[idx].innerHTML === color)) {
                     score += 10;
                     scoreDisplay.innerText = score;
-                    rowOfThree.forEach(index => {
-                        squares[index].innerHTML = '';
-                    });
+                    row.forEach(idx => squares[idx].innerHTML = '');
                 }
             }
-        }
-
-        function checkColumnForThree() {
+            // Columns
             for (let i = 0; i < 24; i++) {
-                let columnOfThree = [i, i+width, i+width*2];
-                let decidedColor = squares[i].innerHTML;
-                const isBlank = squares[i].innerHTML === '';
-
-                if (columnOfThree.every(index => squares[index].innerHTML === decidedColor && !isBlank)) {
+                let col = [i, i+6, i+12];
+                let color = squares[i].innerHTML;
+                if (color !== '' && col.every(idx => squares[idx].innerHTML === color)) {
                     score += 10;
                     scoreDisplay.innerText = score;
-                    columnOfThree.forEach(index => {
-                        squares[index].innerHTML = '';
-                    });
+                    col.forEach(idx => squares[idx].innerHTML = '');
                 }
             }
         }
 
         function moveDown() {
             for (let i = 0; i < 30; i++) {
-                if (squares[i + width].innerHTML === '') {
-                    squares[i + width].innerHTML = squares[i].innerHTML;
+                if (squares[i + 6].innerHTML === '') {
+                    squares[i + 6].innerHTML = squares[i].innerHTML;
                     squares[i].innerHTML = '';
                 }
-                const firstRow = [0, 1, 2, 3, 4, 5];
-                if (firstRow.includes(i) && squares[i].innerHTML === '') {
+                if (i < 6 && squares[i].innerHTML === '') {
                     squares[i].innerHTML = candies[Math.floor(Math.random() * candies.length)];
                 }
             }
         }
-
-        createBoard();
     </script>
 </body>
 </html>
